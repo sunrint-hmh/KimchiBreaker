@@ -58,3 +58,7 @@ desktop.ini
 /Tools/**/obj/
 /Tools/**/TestResults/
 !/Tools/**/*.csproj
+
+# Python cache
+__pycache__/
+*.pyc

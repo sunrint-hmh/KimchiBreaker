@@ -300,7 +300,8 @@ namespace KimchiBreaker.Net
                 m_Engine = null;
             }
 
-            m_Spawner?.DespawnAll();
+            // 방이 닫히는 중에는 Netcode 가 남은 오브젝트를 직접 정리하므로 목록만 비운다.
+            m_Spawner?.Forget();
             m_Spawner = null;
             m_Random?.Dispose();
             m_Random = null;

@@ -69,6 +69,9 @@ namespace KimchiBreaker.Net
         /// <summary>시점 카메라가 붙을 위치(눈).</summary>
         public Transform Eye => m_Visuals != null ? m_Visuals.Eye : transform;
 
+        /// <summary>좌석 번호(0~3). 캐릭터 색 등에 쓴다.</summary>
+        public int Seat => m_Seat.Value;
+
         /// <summary>서버가 인정한 최신 자세.</summary>
         public NetPose ServerPose => m_Pose.Value;
 
@@ -99,6 +102,7 @@ namespace KimchiBreaker.Net
             GameObject instance = Instantiate(prefab, GameArena.SeatPosition(seat), GameArena.SeatRotation(seat));
             var avatar = instance.GetComponent<PlayerAvatar>();
             avatar.m_InitialSeat = seat;
+            avatar.m_Seat.Value = (byte)Mathf.Clamp(seat, 0, GameRules.MaxPlayers - 1); // 생성 전 초기값으로 함께 전송된다
             var networkObject = instance.GetComponent<NetworkObject>();
             try
             {
@@ -130,6 +134,7 @@ namespace KimchiBreaker.Net
         static readonly Dictionary<ulong, PlayerAvatar> s_Avatars = new Dictionary<ulong, PlayerAvatar>();
 
         readonly NetworkVariable<NetPose> m_Pose = new NetworkVariable<NetPose>();
+        readonly NetworkVariable<byte> m_Seat = new NetworkVariable<byte>();
 
         CharacterController m_Controller;
         AvatarVisuals m_Visuals;
@@ -166,7 +171,7 @@ namespace KimchiBreaker.Net
         {
             s_Avatars[OwnerClientId] = this;
             m_Visuals.SetFirstPerson(IsOwner);
-            m_Visuals.SetSeatColor(m_InitialSeat);
+            m_Visuals.SetSeatColor(m_Seat.Value);
 
             if (IsServer)
             {

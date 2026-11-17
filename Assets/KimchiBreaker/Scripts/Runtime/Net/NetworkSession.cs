@@ -136,7 +136,9 @@ namespace KimchiBreaker.Net
         bool m_CleanupRequested;
         string m_CleanupMessage = string.Empty;
         float m_DirectConnectDeadline = -1f;
+        bool m_PendingDirectJoin;
         bool m_SessionLocked;
+        Task m_ServicesTask;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
@@ -349,6 +351,7 @@ namespace KimchiBreaker.Net
                 return;
             }
 
+            m_PendingDirectJoin = true;
             m_DirectConnectDeadline = Time.unscaledTime + k_DirectConnectTimeout;
         }
 
@@ -562,7 +565,31 @@ namespace KimchiBreaker.Net
             }
         }
 
+        /// <summary>
+        /// Unity Services 초기화와 익명 로그인. 여러 작업이 동시에 불러도 한 번만 실행되도록 같은 작업을 공유한다.
+        /// </summary>
         async Task EnsureServicesAsync(CancellationToken token)
+        {
+            if (UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn)
+            {
+                return;
+            }
+
+            if (m_ServicesTask == null || m_ServicesTask.IsFaulted || m_ServicesTask.IsCanceled)
+            {
+                m_ServicesTask = InitializeServicesAsync();
+            }
+
+            using (var wait = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                Task finished = await Task.WhenAny(m_ServicesTask, Task.Delay(Timeout.Infinite, wait.Token));
+                wait.Cancel(); // 대기용 Delay 를 정리한다
+                token.ThrowIfCancellationRequested();
+                await finished; // 초기화가 실패했다면 여기서 예외가 다시 던져진다
+            }
+        }
+
+        static async Task InitializeServicesAsync()
         {
             if (UnityServices.State == ServicesInitializationState.Uninitialized)
             {
@@ -576,10 +603,9 @@ namespace KimchiBreaker.Net
                 await UnityServices.InitializeAsync(options);
             }
 
-            while (UnityServices.State == ServicesInitializationState.Initializing)
+            for (int i = 0; i < 300 && UnityServices.State == ServicesInitializationState.Initializing; i++)
             {
-                token.ThrowIfCancellationRequested();
-                await Task.Delay(100, token);
+                await Task.Delay(100);
             }
 
             if (UnityServices.State != ServicesInitializationState.Initialized)
@@ -587,13 +613,10 @@ namespace KimchiBreaker.Net
                 throw new ServicesInitializationException("Unity Services 초기화 실패");
             }
 
-            token.ThrowIfCancellationRequested();
             if (!AuthenticationService.Instance.IsSignedIn)
             {
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
             }
-
-            token.ThrowIfCancellationRequested();
         }
 
         /// <summary>
@@ -666,6 +689,13 @@ namespace KimchiBreaker.Net
                 return; // 사용자가 직접 취소함
             }
 
+            if (Status == SessionStatus.Offline)
+            {
+                // 연결 끊김 처리가 먼저 끝나 더 정확한 안내(방이 가득 참 등)가 이미 표시된 경우
+                Debug.LogWarning("[KimchiBreaker] 정리된 작업의 뒤늦은 실패(무시): " + exception.Message);
+                return;
+            }
+
             Debug.LogWarning("[KimchiBreaker] 온라인 작업 실패: " + exception);
             string message = DescribeServiceError(exception);
             ISession session = m_Session;
@@ -695,6 +725,7 @@ namespace KimchiBreaker.Net
             if (status != SessionStatus.Busy)
             {
                 m_DirectConnectDeadline = -1f;
+                m_PendingDirectJoin = false;
             }
 
             NotifyChanged();
@@ -891,9 +922,11 @@ namespace KimchiBreaker.Net
                 return;
             }
 
-            if (clientId == m_NetworkManager.LocalClientId && Status == SessionStatus.Busy && m_Session == null)
+            // 직접 연결만 여기서 입장 완료로 처리한다. 온라인 참가는 세션 작업이 끝난 뒤 처리한다.
+            if (clientId == m_NetworkManager.LocalClientId && Status == SessionStatus.Busy && m_PendingDirectJoin)
             {
-                SetStatus(SessionStatus.InRoom, string.Empty); // 직접 연결 성공
+                m_PendingDirectJoin = false;
+                SetStatus(SessionStatus.InRoom, string.Empty);
             }
         }
 

@@ -79,9 +79,22 @@ namespace KimchiBreaker.Gameplay
             }
         }
 
+        /// <summary>추적 목록만 비운다(Netcode 가 종료하며 오브젝트를 정리할 때).</summary>
+        public void Forget()
+        {
+            m_Alive.Clear();
+            m_NextSpawnTime = double.NaN;
+        }
+
         /// <summary>남아 있는 재료를 모두 없앤다(라운드 종료, 대기실 복귀 시).</summary>
         public void DespawnAll()
         {
+            if (m_NetworkManager == null || !m_NetworkManager.IsServer || m_NetworkManager.ShutdownInProgress)
+            {
+                Forget();
+                return;
+            }
+
             for (int i = 0; i < m_Alive.Count; i++)
             {
                 NetworkObject networkObject = m_Alive[i];

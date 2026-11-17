@@ -524,7 +524,7 @@ def main():
         for dll in wanted_dlls:
             if dll in precompiled:
                 refs.append(precompiled[dll])
-        if args.full and not assembly.data.get("overrideReferences", False):
+        if not assembly.data.get("overrideReferences", False):
             refs += auto_precompiled
         if assembly.name.endswith(".CodeGen"):
             # Unity 는 IL 후처리기 어셈블리에 컴파일 파이프라인 인터페이스를 자동으로 참조시킨다.

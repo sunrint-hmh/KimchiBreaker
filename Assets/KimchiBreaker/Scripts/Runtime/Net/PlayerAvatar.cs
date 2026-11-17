@@ -187,12 +187,11 @@ namespace KimchiBreaker.Net
                 m_Yaw = transform.eulerAngles.y;
                 m_Pitch = 10f;
             }
-            else
+            else if (!m_Pose.Value.Equals(default(NetPose)))
             {
-                // 다른 사람 캐릭터는 받은 자세로 바로 맞춘다.
+                // 다른 사람 캐릭터는 받은 자세로 바로 맞춘다(아직 값을 못 받았으면 생성 위치인 좌석에 둔다).
                 SnapTo(m_Pose.Value);
             }
-
         }
 
         public override void OnNetworkDespawn()

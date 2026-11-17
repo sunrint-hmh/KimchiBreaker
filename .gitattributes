@@ -1,0 +1,32 @@
+* text=auto eol=lf
+
+# Unity YAML: keep LF, let Unity's smart merge handle them
+*.unity text eol=lf merge=unityyamlmerge
+*.prefab text eol=lf merge=unityyamlmerge
+*.asset text eol=lf merge=unityyamlmerge
+*.meta text eol=lf
+*.mat text eol=lf
+*.anim text eol=lf
+*.controller text eol=lf
+
+*.cs text eol=lf diff=csharp
+*.uxml text eol=lf
+*.uss text eol=lf
+*.tss text eol=lf
+*.json text eol=lf
+*.asmdef text eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.psd binary
+*.tga binary
+*.fbx binary
+*.blend binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.ttf binary
+*.otf binary
+*.dll binary

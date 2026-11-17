@@ -97,6 +97,30 @@ namespace KimchiBreaker.Net
         /// <summary>IP 직접 연결 사용 가능 여부. 정식 빌드에서는 막아 둔다.</summary>
         public static bool DirectConnectAllowed => Debug.isDebugBuild;
 
+        /// <summary>
+        /// 온라인 방(Relay/Lobby)을 쓸 수 있도록 프로젝트가 Unity Cloud 에 연결되어 있는지.
+        /// 연결 정보(프로젝트 ID)는 빌드에 함께 들어간다.
+        /// </summary>
+        public static bool OnlineServicesLinked => !string.IsNullOrEmpty(Application.cloudProjectId);
+
+        /// <summary>온라인 서비스 미연결 안내 문구.</summary>
+        public static string NotLinkedMessage => Debug.isDebugBuild
+            ? "온라인 방을 쓰려면 이 프로젝트를 Unity Cloud 에 연결해야 합니다. (Edit → Project Settings → Services, README 1장 참고)"
+            : "온라인 서비스 설정이 빠진 빌드입니다. 개발자에게 알려 주세요.";
+
+        /// <summary>온라인 기능을 쓸 수 있는지 확인하고, 아니면 안내 문구를 띄운다.</summary>
+        bool CheckOnlineAvailable()
+        {
+            if (OnlineServicesLinked)
+            {
+                return true;
+            }
+
+            LastError = NotLinkedMessage;
+            NotifyChanged();
+            return false;
+        }
+
         /// <summary>초기화 실패(프리팹 누락 등) 사유. 비어 있으면 정상.</summary>
         public string FatalError { get; private set; } = string.Empty;
 
@@ -356,11 +380,22 @@ namespace KimchiBreaker.Net
         }
 
         /// <summary>온라인 방을 만든다(Relay). 비공개 방은 목록에 보이지 않고 코드로만 들어올 수 있다.</summary>
-        public void CreateOnlineRoom(bool isPrivate) => _ = CreateOnlineRoomAsync(isPrivate);
+        public void CreateOnlineRoom(bool isPrivate)
+        {
+            if (CheckOnlineAvailable())
+            {
+                _ = CreateOnlineRoomAsync(isPrivate);
+            }
+        }
 
         /// <summary>방 코드로 온라인 방에 참가한다.</summary>
         public void JoinOnlineByCode(string rawCode)
         {
+            if (!CheckOnlineAvailable())
+            {
+                return;
+            }
+
             if (!JoinCode.TryNormalize(rawCode, out string code))
             {
                 LastError = $"방 코드는 영문/숫자 {JoinCode.MinLength}~{JoinCode.MaxLength}자입니다.";
@@ -374,7 +409,7 @@ namespace KimchiBreaker.Net
         /// <summary>공개 방 목록에서 고른 방에 참가한다.</summary>
         public void JoinOnlineById(string sessionId)
         {
-            if (string.IsNullOrEmpty(sessionId) || sessionId.Length > 128)
+            if (string.IsNullOrEmpty(sessionId) || sessionId.Length > 128 || !CheckOnlineAvailable())
             {
                 return;
             }
@@ -386,7 +421,7 @@ namespace KimchiBreaker.Net
         public async Task<List<RoomListing>> QueryRoomsAsync()
         {
             var rooms = new List<RoomListing>();
-            if (Status != SessionStatus.Offline || FatalError.Length > 0)
+            if (Status != SessionStatus.Offline || FatalError.Length > 0 || !CheckOnlineAvailable())
             {
                 return rooms;
             }
@@ -1073,9 +1108,11 @@ namespace KimchiBreaker.Net
                             return "온라인 방 처리 중 오류가 발생했습니다.";
                     }
 
+                case ServicesInitializationException _ when exception.ToString().IndexOf("link your project", StringComparison.OrdinalIgnoreCase) >= 0:
+                    return NotLinkedMessage;
                 case ServicesInitializationException _:
                 case AuthenticationException _:
-                    return "온라인 서비스에 로그인하지 못했습니다. 인터넷 연결과 Unity 프로젝트 연결 상태를 확인하세요.";
+                    return "온라인 서비스에 로그인하지 못했습니다. 인터넷 연결을 확인하세요.";
                 case RequestFailedException _:
                     return "온라인 서비스 요청이 실패했습니다. 인터넷 연결을 확인하세요.";
                 default:

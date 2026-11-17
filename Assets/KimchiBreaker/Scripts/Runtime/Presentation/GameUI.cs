@@ -218,7 +218,10 @@ namespace KimchiBreaker.Presentation
             DrawCenteredPanel(640f, NetworkSession.DirectConnectAllowed ? 860f : 700f, () =>
             {
                 GUILayout.Label("Kimchi Breaker", m_Title);
-                DrawError(m_Session.LastError);
+                if (m_Session.LastError != NetworkSession.NotLinkedMessage)
+                {
+                    DrawError(m_Session.LastError); // 미연결 안내는 아래 온라인 영역에 따로 표시한다
+                }
 
                 GUILayout.Label("닉네임", m_Small);
                 GUILayout.BeginHorizontal();
@@ -235,6 +238,14 @@ namespace KimchiBreaker.Presentation
                 GUILayout.EndHorizontal();
                 GUILayout.Space(16f);
 
+                // 프로젝트가 Unity Cloud 에 연결되지 않았으면 온라인 기능을 막고 이유를 미리 보여 준다.
+                bool online = NetworkSession.OnlineServicesLinked;
+                if (!online)
+                {
+                    GUILayout.Label(NetworkSession.NotLinkedMessage, m_Error);
+                }
+
+                GUI.enabled = online;
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("공개 방 만들기", m_Button, GUILayout.Height(52f)))
                 {
@@ -273,7 +284,7 @@ namespace KimchiBreaker.Presentation
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("공개 방 목록", m_Label);
-                GUI.enabled = !m_RoomsLoading;
+                GUI.enabled = online && !m_RoomsLoading;
                 if (GUILayout.Button(m_RoomsLoading ? "불러오는 중..." : "새로고침", m_Button, GUILayout.Width(180f), GUILayout.Height(36f)))
                 {
                     Defer(() =>

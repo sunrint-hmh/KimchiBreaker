@@ -25,10 +25,15 @@
 3. 한 창에서 **직접 연결 방 열기**, 나머지 창에서 주소 `127.0.0.1` 로 **IP로 참가**.
 
 ### 다른 PC 와 테스트하기 (온라인)
-온라인 방(방 코드, 공개 방 목록)은 Unity Relay 를 쓰므로 한 번 설정이 필요하다.
-1. **Edit → Project Settings → Services** 에서 Unity 계정 조직을 고르고 프로젝트를 연결한다.
-2. [Unity Cloud 대시보드](https://cloud.unity.com) → 해당 프로젝트 → **Multiplayer** 에서 Relay 와 Lobby 를 켠다(4인 규모는 무료 범위).
-3. 메인 메뉴 → **공개 방 만들기** 또는 **비공개 방 만들기** → 대기실에 표시되는 방 코드를 친구에게 알려 준다.
+온라인 방(방 코드, 공개 방 목록)은 Unity 의 중계 서버(Relay)와 방 목록 서비스(Lobby)를 쓰므로 한 번 설정이 필요하다.
+연결 전에는 메인 메뉴의 온라인 버튼이 꺼져 있고 안내 문구가 보인다.
+
+1. Unity Hub 와 에디터에 Unity 계정으로 로그인되어 있는지 확인한다.
+2. **Edit → Project Settings → Services** 에서 조직(Organization)을 고르고 **Create project ID**(처음) 또는 기존 프로젝트를 골라 연결한다.
+3. [Unity Cloud 대시보드](https://cloud.unity.com) → 해당 프로젝트 → **Multiplayer** 에서 **Relay** 와 **Lobby** 를 사용하도록 켠다(4인 규모는 무료 범위).
+4. 연결하면 `ProjectSettings/ProjectSettings.asset` 의 `cloudProjectId` 가 채워진다. **이 파일을 커밋해서** 팀원도 같은 프로젝트 ID 를 쓰게 한다.
+   팀원은 같은 조직에 초대해 두면 에디터에서 설정을 확인/변경할 수 있다.
+5. 메인 메뉴 → **공개 방 만들기** 또는 **비공개 방 만들기** → 대기실에 표시되는 방 코드를 친구에게 알려 준다.
 
 > 같은 공유기 안이라면 개발 빌드의 "같은 네트워크 허용" + IP 참가로도 테스트할 수 있다(Windows 방화벽에서 포트 7777 허용 필요).
 

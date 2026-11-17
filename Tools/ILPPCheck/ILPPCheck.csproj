@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Netcode for GameObjects 의 IL 후처리기(RPC/NetworkVariable 코드 생성)를 Unity 에디터 없이 실행해
+    Unity 에서만 드러나는 코드 생성 오류를 미리 찾는다. 직접 실행하지 말고 run_ilpp_check.py 를 쓴다.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RollForward>Major</RollForward>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Unity.CompilationPipeline.Common">
+      <HintPath>$(UnityManagedDir)/Unity.CompilationPipeline.Common.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

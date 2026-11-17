@@ -76,6 +76,14 @@ namespace KimchiBreaker.Net
 
         public static IEnumerable<PlayerAvatar> All => s_Avatars.Values;
 
+        /// <summary>
+        /// 3인칭 연출(피날레) 중 내 캐릭터의 전신을 보이게 할지. false 면 1인칭 기본 상태(내 캐릭터는 손만 보임).
+        /// </summary>
+        public void SetThirdPersonView(bool thirdPerson)
+        {
+            m_Visuals.SetFirstPerson(IsOwner && !thirdPerson);
+        }
+
         // ------------------------------------------------------------------ 서버 생성
 
         /// <summary>[서버 전용] 플레이어 캐릭터를 좌석에 만들고 해당 클라이언트 소유로 생성한다.</summary>

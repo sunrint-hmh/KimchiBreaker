@@ -306,6 +306,23 @@ def find_csc(editor):
     raise SystemExit("에디터에서 C# 컴파일러(csc)를 찾지 못했습니다.")
 
 
+def is_auto_referenced_for_editor(meta_path):
+    """DLL 의 .meta 설정상 자동 참조 대상이고 에디터에서 쓸 수 있는지."""
+    try:
+        with open(meta_path, encoding="utf-8") as f:
+            meta = f.read()
+    except OSError:
+        return False
+    if not re.search(r"isExplicitlyReferenced:\s*0", meta):
+        return False
+    # "Any Platform" 이 켜져 있으면 개별 플랫폼 항목은 무시되고 Exclude 설정만 본다(Unity PluginImporter 규칙).
+    any_platform = re.search(r"Any:\s*\n\s*second:\s*\n\s*enabled:\s*(\d)", meta)
+    if any_platform and any_platform.group(1) == "1":
+        return not re.search(r"Exclude Editor:\s*1", meta)
+    editor = re.search(r"Editor:\s*Editor\s*\n\s*second:\s*\n\s*enabled:\s*(\d)", meta)
+    return bool(editor and editor.group(1) == "1")
+
+
 def dlls_in(directory):
     if not os.path.isdir(directory):
         return []
@@ -320,6 +337,10 @@ def main():
     parser.add_argument("--langversion", default="9.0")
     parser.add_argument("--show-package-warnings", action="store_true")
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--full", action="store_true",
+                        help="참조용이 아닌 실행 가능한 DLL 과 PDB 를 만든다(Netcode 코드 생성 검사용)")
+    parser.add_argument("--extra", action="append", default=[],
+                        help="프로젝트가 참조하지 않아도 함께 컴파일할 패키지 어셈블리 이름(여러 번 지정 가능)")
     args = parser.parse_args()
 
     project = os.path.abspath(args.project)
@@ -401,7 +422,10 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     csc = find_csc(editor)
 
-    engine_refs = dlls_in(os.path.join(data, "Managed", "UnityEngine"))
+    engine_refs = [
+        path for path in dlls_in(os.path.join(data, "Managed", "UnityEngine"))
+        if re.match(r"^(Unity(Engine|Editor)(\.|$)|Unity\.Scripting\.dll$)", os.path.basename(path))
+    ]
     bcl_refs = (
         [os.path.join(data, "NetStandard", "ref", "2.1.0", "netstandard.dll")]
         + dlls_in(os.path.join(data, "NetStandard", "compat", "2.1.0", "shims", "netstandard"))
@@ -413,12 +437,16 @@ def main():
 
     # 패키지에 들어 있는 미리 컴파일된 DLL (Newtonsoft.Json, nunit 등)
     precompiled = {}
-    for _, (_, path) in packages.resolved.items():
+    auto_precompiled = []  # Unity 가 overrideReferences=false 인 어셈블리에 자동으로 붙이는 DLL
+    for _, (_, path) in sorted(packages.resolved.items()):
         for current, dirs, files in os.walk(path):
             dirs[:] = [d for d in dirs if not skip_dir(d)]
             for name in files:
                 if name.endswith(".dll"):
-                    precompiled.setdefault(name, os.path.join(current, name))
+                    full = os.path.join(current, name)
+                    precompiled.setdefault(name, full)
+                    if precompiled[name] == full and is_auto_referenced_for_editor(full + ".meta"):
+                        auto_precompiled.append(full)
 
     state = {}
     order = []
@@ -435,7 +463,7 @@ def main():
         state[assembly.name] = "done"
         order.append(assembly)
 
-    wanted = [a for a in assemblies if a.owner == "project"]
+    wanted = [a for a in assemblies if a.owner == "project" or a.name in args.extra]
     for assembly in wanted:
         visit(assembly, [])
     auto_referenced = []
@@ -487,7 +515,8 @@ def main():
         if not assembly.data.get("noEngineReferences", False):
             refs += engine_refs
         refs += bcl_refs
-        if assembly.editor_only or getattr(assembly, "predefined_editor", False):
+        if assembly.editor_only or getattr(assembly, "predefined_editor", False) or (args.full and not is_project):
+            # 에디터에서 컴파일될 때 쓰는 추가 BCL(System.Runtime.CompilerServices.Unsafe 등)
             refs += editor_bcl_refs
         wanted_dlls = list(assembly.data.get("precompiledReferences") or [])
         if not assembly.data.get("overrideReferences", False):
@@ -495,14 +524,20 @@ def main():
         for dll in wanted_dlls:
             if dll in precompiled:
                 refs.append(precompiled[dll])
+        if args.full and not assembly.data.get("overrideReferences", False):
+            refs += auto_precompiled
+        if assembly.name.endswith(".CodeGen"):
+            # Unity 는 IL 후처리기 어셈블리에 컴파일 파이프라인 인터페이스를 자동으로 참조시킨다.
+            refs.append(os.path.join(data, "Managed", "Unity.CompilationPipeline.Common.dll"))
 
         assembly.out = os.path.join(out_dir, assembly.name + ".dll")
         rsp = os.path.join(out_dir, assembly.name + ".rsp")
         with open(rsp, "w", encoding="utf-8") as f:
-            f.write("-target:library\n-nologo\n-nostdlib+\n-deterministic\n-debug-\n-optimize-\n")
+            f.write("-target:library\n-nologo\n-nostdlib+\n-deterministic\n-optimize-\n")
+            f.write("-debug:portable\n" if args.full else "-debug-\n")
             f.write("-nowarn:CS1701,CS1702,CS0169,CS0649,CS0282\n")
             f.write(f"-langversion:{args.langversion if is_project else 'preview'}\n")
-            f.write("-refonly\n" if not is_project else "")
+            f.write("-refonly\n" if not is_project and not args.full else "")
             if assembly.data.get("allowUnsafeCode", False):
                 f.write("-unsafe+\n")
             f.write(f'-out:"{assembly.out}"\n')

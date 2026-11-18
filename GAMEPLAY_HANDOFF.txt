@@ -1,0 +1,35 @@
+KimchiBreaker gameplay / art snapshot
+
+Branch: feature/gameplay-art
+Unity: 6000.6.8f1. Open this repository root as the Unity project.
+Run git lfs install before cloning/pulling; model, texture and font binaries use LFS.
+
+Contents
+- Seven project scenes, including the current InGame, Draw and Result setup.
+- Ingredients, visible circle targeting, HP, last-hit rewards and damage knockback.
+- Local round, ticket allocation, weighted raffle and skill prototypes.
+- Kimjang mat, cabbage, skill jars, result towers and PS1-style rubber glove assets.
+- Stretching first-person glove visuals; skill, score, draw and result UI prefabs.
+- Blender authoring files and texture sources in Art/.
+- Existing editor builders and verification scripts in AgentScripts/.
+
+Ownership / integration
+The local round/session/scene-transition code is a prototype for testing gameplay.
+Yechan owns networking, room/player synchronization and authoritative match flow.
+Compare with feature/network-foundation before integrating overlapping scripts,
+scene files, package manifests and build settings. Keep Unity .meta files with assets.
+This branch has not been merged into main or the network branch.
+The original implementation ownership document is preserved as design-source.txt.
+
+Art sources
+Art/ is the versioned snapshot of the authoring sources. At snapshot time the
+authoring working directory was also present outside this repository at the
+workspace root's Art/ directory. Future edits must be copied into this tracked
+Art/ directory, or performed here, before committing.
+The rubber glove Blender file retains the original Blender material. Its current
+Unity appearance uses Glove_PSX_Source.png and Assets/Shaders/PSXRubber.shader.
+See Art/RubberGloves/PSX_TEXTURE_WORKFLOW.txt for material details and references.
+
+Local-only files
+Unity caches, recovery scenes, authoring backups, temporary diagnostic captures,
+and downloaded reference photographs are excluded. Source URLs are retained.

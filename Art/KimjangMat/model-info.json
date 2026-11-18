@@ -1,0 +1,11 @@
+{
+  "name": "KimjangMat",
+  "units": "meters",
+  "diameter_m": 3.271,
+  "height_m": 0.485,
+  "triangles": 3456,
+  "materials": 3,
+  "albedo_resolution": "128x128 each",
+  "pivot": "center of ground plane",
+  "style": "faceted low-poly, point-filter vinyl textures"
+}

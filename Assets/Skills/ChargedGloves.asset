@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74e9f390aa0a30b429649eb357b54af2, type: 3}
+  m_Name: ChargedGloves
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  kind: 2
+  displayName: "\uCDA9\uC804 \uC7A5\uAC11"
+  winnerCount: 1
+  availableInDraw: 1
+  descriptionOverride: 
+  extraClickDamage: 1
+  aimDiameterBonus: 0.2
+  chargeDelaySeconds: 1
+  chargedDamageMultiplier: 2
+  successfulClicksPerExtraStrike: 5
+  extraStrikeDamageMultiplier: 1

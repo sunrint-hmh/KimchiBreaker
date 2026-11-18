@@ -1,0 +1,63 @@
+KimchiBreaker: household latex rubber / PSX texture workflow
+
+What the linked reference does
+The author describes editing real photographs, reducing each texture's color palette,
+and using dithering. The worn material shapes come first; random noise alone is not
+what creates the material identity.
+https://www.reddit.com/r/ps1graphics/comments/16h0gy0/sewer_section_psx_limitations_32_color_dithered/
+
+Reusable artist workflow
+1. Study actual household rubber first. The dorsal surface is mostly continuous,
+   smooth pink latex with soft highlights. Use only sparse shallow compression
+   creases, fine molded palm grip, and a narrow molded rib at the cuff edge.
+   Broad repeated transverse folds made the previous version look like bandages.
+   PS1 roughness comes from texels, color steps and dithering, not fabric or cracks.
+2. Keep the UV regions: image top 44% = cuff; remaining lower-left = dorsal hand;
+   lower-right = palm grip. Shader _AtlasSplit remains 0.56 to match these regions.
+   Do not paint object outlines into the atlas.
+3. Reduce the working resolution to 64 or 128 pixels. Check at real gameplay size.
+4. Limit the colors to a small palette (this version uses 32). Use ordered dithering
+   between neighboring tones, rather than applying uniform white noise everywhere.
+5. Import with Point filtering, no mipmaps for this close-up viewmodel, no texture
+   compression and no anisotropic smoothing.
+6. Keep relief shading shallow and low contrast, with broad gentle rubber sheen.
+   This material uses simple vertex lighting and a palette pass.
+
+Implemented version
+- Source: Glove_PSX_Source.png, generated with the built-in imagegen edit tool.
+- Game texture import: 128 x 128. The original source image remains full-size.
+- Existing meshes, UVs, hand orientation, attack rules and stretch motion are unchanged.
+- Shader: Assets/Shaders/PSXRubber.shader; affects only the glove material.
+- Final glove shader output chooses from an 8-tone x 4-family palette: exactly 32 colors
+  before camera post-processing. The source PNG itself is not a 32-color indexed file.
+- UV-space 4 x 4 ordered dither uses the documented PS1 offset pattern. UV-space
+  anchoring is an artistic choice so the pattern stretches with the rubber, not a
+  literal emulation of the console's screen-space framebuffer dithering.
+- This is PS1-inspired material rendering, not a full-scene PS1 hardware emulator.
+
+Technical distinction
+32 colors is this reference's artistic palette choice. PS1 indexed textures support
+16 or 256 palette entries, with a separate 15-bit direct-color mode. The documented
+framebuffer dithering adds offsets before reducing each RGB channel to 5 bits.
+https://psx-spx.consoledev.net/graphicsprocessingunitgpu/
+
+Practical tutorial (author's own workflow)
+https://northleafstudio.itch.io/free-seamless-textures-12-tileable-materials-pixel-art-versions/devlog/1759386/tutorial-how-to-get-the-ps1-texture-look-in-about-15-lines-of-python
+
+Real household rubber references used for the correction
+https://www.action.com/fr-fr/p/210016/gants-de-menage/
+https://mamisonpartners.com/product/마미손-패스-m/971/
+Reference photographs remain outside Unity Assets and are not shipped as textures.
+
+Image generation: built-in imagegen edit tool, using the previous atlas as edit
+target and the two actual product photos as material references. Exact final prompt:
+LATEX_REFERENCE_PROMPT.txt
+Selected output: exec-68d99c7f-4b20-4974-8d4a-8db6fa6067b7.png.
+The preceding bandage-like atlas is retained under AgentScripts/Backups/LatexSurface-20261118-030711/.
+
+Verification: VerifyPSXRubber.Main passed all 10 existing material/import/preview
+checks. Preview rendered in an isolated preview scene without changing or saving
+the user's game scene. The user's running Play session was left running.
+
+Generated source saved in this folder and copied into Assets/3d_models/RubberGloves/.
+The default imagegen output was retained under the user's .codex/generated_images/.

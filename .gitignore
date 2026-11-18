@@ -112,3 +112,19 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Local authoring backups, editor recovery scenes, and generated diagnostic captures
+/AgentScripts/Backups/
+/AgentScripts/*.png
+/AgentScripts/*.json
+/Assets/_Recovery/
+/Assets/_Recovery.meta
+/Art/**/Before*/
+/Art/**/PreviousVersion/
+/Art/**/__pycache__/
+
+# Downloaded reference photos stay local; source links remain in References/README.txt
+/Art/**/References/*.jpg
+/Art/**/References/*.jpeg
+/Art/**/References/*.png
+/Art/**/References/*.webp

@@ -1,0 +1,17 @@
+{
+  "style": "faceted kitchen rubber gloves, worn red-pink; no fabric weave, no chrome",
+  "texture_size": 256,
+  "filter": "Point / Closest",
+  "metallic": 0,
+  "roughness_range": [
+    0.56,
+    0.88
+  ],
+  "native_axes": "+Y fingertips, +Z dorsal",
+  "triangles_per_hand": 5566,
+  "hands": [
+    "RubberGlove_Left",
+    "RubberGlove_Right"
+  ],
+  "rig": "rigid hand pivot; separate left/right swing motion"
+}

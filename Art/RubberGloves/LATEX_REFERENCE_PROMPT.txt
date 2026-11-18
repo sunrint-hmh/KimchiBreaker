@@ -1,0 +1,12 @@
+Use case: precise-object-edit.
+Asset type: flat UV albedo atlas for an existing first-person household rubber glove mesh in a PS1-inspired horror game.
+Input image 1 is the EDIT TARGET existing atlas. Input image 2 is a REAL MATERIAL REFERENCE (pink latex household gloves, palm and back). Input image 3 is an additional Korean household glove REFERENCE ONLY. Do not place the reference photographs, glove silhouettes, branding, packaging or white backgrounds into the atlas.
+
+Replace the current bandage-like surface with recognizable continuous molded PINK HOUSEHOLD RUBBER. The current broad repeated horizontal white/red folded bands are the defect: remove them completely. Most of the surface should be a quiet continuous raspberry-pink rubber with a very soft, broad, low-contrast satin sheen. No wrapped strips, overlapping layers, weaving, fabric, leather cracks, dramatic ridged folds, deep gouges, chalky white edges, dirt patches or random grunge. Keep the same warm saturated pink family, slightly closer to the reference's familiar kitchen-glove pink.
+
+Preserve this precise ATLAS arrangement and square aspect:
+- TOP 44 percent of the image: one continuous long cuff surface, mostly smooth pink. Only a very few faint longitudinal pressure variations, and a small narrow strip of shallow molded vertical cuff ribs at the TOP edge. No horizontal wrapping or transverse repeating stripes.
+- BOTTOM 56 percent, LEFT half: smooth back-of-hand/finger rubber. 90 percent quiet flat surface; only two or three very small faint soft compression creases near the bottom edge. No broad wavy mountains or folds. Do not draw a whole hand or finger outlines.
+- BOTTOM 56 percent, RIGHT half: same pink with fine shallow molded grip dots/diamonds like the reference palm. Same base color as the back, minimal contrast, small embossed stipples that read as rubber rather than a woven net. No thick diagonal black lines.
+Keep the boundaries aligned with the original atlas, no dividers, labels, margin or gaps.
+Style: restrained low-resolution PS1 albedo, readable broad color patches, subtle sparse ordered dithering between close pink tones; no all-over checker noise. The game shader supplies 128px point sampling and 32-color quantization, so focus on coherent material identity, low contrast and clean continuous molded rubber. Flat even albedo, no perspective and no 3D model render. Opaque full square, no text or logos.

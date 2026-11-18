@@ -1,0 +1,14 @@
+{
+  "name": "SkillJar",
+  "vertices": 720,
+  "triangles": 1436,
+  "height_m": 0.8445,
+  "texture_size": 256,
+  "materials": [
+    "Jar_DirtyGlass",
+    "Jar_InnerGlass",
+    "Jar_ThickRim",
+    "Jar_ThickBase"
+  ],
+  "preview_only_objects_excluded_from_exports": true
+}
